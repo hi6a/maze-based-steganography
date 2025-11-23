@@ -1,8 +1,7 @@
-
 // get the input, encrypt & shuffle mapping array index to cell based on seed from key
-const cols = 12, rows =12;
+
 const key = "f4a1d9e8b2c790c5caf9d89f7df4fb83e63a6f4bc6f3557ab03e15dcfa204f09";
-const arr = createArr(cols, rows);
+const arr = createArr(COLS, ROWS);
 const seed = convertToBytes(key)[0];
 
 var cipherText, binaryCipherText;
@@ -14,28 +13,22 @@ function encryptMessage(e){
   let message = document.getElementById("inputPlainText").value;
   cipherText = CryptoJS.AES.encrypt(message, key).toString();
   binaryCipherText = convertToBinary(convertToBytes(cipherText));
-  if (binaryCipherText.length/4 > cols*rows) {
+  if (binaryCipherText.length/4 > COLS*ROWS) {
     cipherText ="";
     binaryCipherText =""
     return alert("Message is too long!");
   }
   console.log("encrypted into: " + cipherText +" " + binaryCipherText + " of length "+ binaryCipherText.length );
+generateMaze();
+drawMaze();
 }
 
 function splitBinaryIntoCells(bits, size =4){
   var result =[];
-  for(let i =0; i<bits.lenght; i+=size){
+  for(let i =0; i<bits.length; i+=size){
     result.push(bits.slice(i,i+size));
   }
   return result;
-}
-
-function createArr(cols, rows){
-  let arr = new Array(cols*rows);
-  for(let i=0; i< arr.length; i++){
-  arr[i] = i;
-}
-  return arr;
 }
 
 function shuffle(arr, seed){
