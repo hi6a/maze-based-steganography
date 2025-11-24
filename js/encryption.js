@@ -1,10 +1,10 @@
 // get the input, encrypt & shuffle mapping array index to cell based on seed from key
 
 const key = "f4a1d9e8b2c790c5caf9d89f7df4fb83e63a6f4bc6f3557ab03e15dcfa204f09";
-const arr = createArr(COLS, ROWS);
 const seed = convertToBytes(key)[0];
 
 var cipherText, binaryCipherText;
+var chunkedBits=[];
 
 document.getElementById("myForm").addEventListener("submit",encryptMessage);
 
@@ -19,8 +19,15 @@ function encryptMessage(e){
     return alert("Message is too long!");
   }
   console.log("encrypted into: " + cipherText +" " + binaryCipherText + " of length "+ binaryCipherText.length );
-generateMaze();
-drawMaze();
+chunkedBits = splitBinaryIntoCells(binaryCipherText);
+  generateMaze();
+  drawMaze();
+
+loadModels(() => {
+  buildMaze3D();
+  animate();
+});
+
 }
 
 function splitBinaryIntoCells(bits, size =4){
@@ -29,25 +36,6 @@ function splitBinaryIntoCells(bits, size =4){
     result.push(bits.slice(i,i+size));
   }
   return result;
-}
-
-function shuffle(arr, seed){
-  const rnd = mulberry32(seed);
-  for (let i = arr.length -1; i>0 ; i-- ){
-    let j = Math.floor(rnd()*(i+1));
-    [arr[i],arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-function mulberry32(seed) {
-  return function() {
-    seed |= 0; 
-    seed = seed + 0x6D2B79F5 | 0;
-    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
-    t ^= t + Math.imul(t ^ t >>> 7, 61 | t);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
 }
 
 function convertToBytes(message){
