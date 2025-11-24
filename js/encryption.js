@@ -25,6 +25,7 @@ chunkedBits = splitBinaryIntoCells(binaryCipherText);
 
 loadModels(() => {
   buildMaze3D();
+    addBgProps();
   animate();
 });
 
