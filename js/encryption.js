@@ -3,14 +3,15 @@
 const key = "f4a1d9e8b2c790c5caf9d89f7df4fb83e63a6f4bc6f3557ab03e15dcfa204f09";
 const seed = convertToBytes(key)[0];
 
-var cipherText, binaryCipherText;
+var message, cipherText, binaryCipherText;
 var chunkedBits=[];
 
 document.getElementById("myForm").addEventListener("submit",encryptMessage);
 
 function encryptMessage(e){
   e.preventDefault();
-  let message = document.getElementById("inputPlainText").value;
+ clearScene();
+  message = document.getElementById("inputPlainText").value;
   cipherText = CryptoJS.AES.encrypt(message, key).toString();
   binaryCipherText = convertToBinary(convertToBytes(cipherText));
   if (binaryCipherText.length/4 > COLS*ROWS) {
@@ -19,13 +20,13 @@ function encryptMessage(e){
     return alert("Message is too long!");
   }
   console.log("encrypted into: " + cipherText +" " + binaryCipherText + " of length "+ binaryCipherText.length );
-chunkedBits = splitBinaryIntoCells(binaryCipherText);
+  chunkedBits = splitBinaryIntoCells(binaryCipherText);
   generateMaze();
   drawMaze();
 
 loadModels(() => {
   buildMaze3D();
-    addBgProps();
+  addBgProps();
   animate();
 });
 

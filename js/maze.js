@@ -59,6 +59,8 @@ function carvePassages(r, c) {
 }
 
 function drawMaze() {
+  wallObjects=[];
+  hiddenCells=[[0,0]];
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   for (let r = 0; r < ROWS; r++) {
@@ -81,7 +83,7 @@ function drawMaze() {
     return r[1] - c[1];
   });
   shuffle(hiddenCells, seed);
-  console.log(hiddenCells);
+  // console.log(hiddenCells);
 }
 
 

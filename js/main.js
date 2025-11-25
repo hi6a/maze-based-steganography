@@ -36,41 +36,45 @@ sun.position.set(10, 20, 10);
 sun.castShadow = true;
 scene.add(sun);
 
+const ambient = new THREE.AmbientLight(0xffffff, 0.6) 
+scene.add(ambient);
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-
-let wallModel, bushModel, trunkModel, treeModel, endModel, bgModel1,bgModel2,bgModel3;
+let planeModel, wallModel, bushModel, trunkModel, treeModel, endModel, bgModel1,bgModel2,bgModel3;
 
 const loader = new THREE.GLTFLoader();
 
 function getModelHeight(model) {
+  model.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(model);
   return box.max.y - box.min.y;
 }
 
-loader.load("../assets/Plane.glb", (gltf) => {
-    obj = gltf.scene;
-    obj.scale.set(30, 30, 30);
-    obj.position.set(0,0,0);
-    scene.add(obj);
-  });
 
 function loadModels(callback) {
   let loaded = 0;
-  let total = 8;
+  let total = 9;
+
+loader.load("../assets/Plane.glb", (gltf) => {
+    planeModel = gltf.scene;
+    planeModel.scale.set(30, 30, 30);
+    planeModel.position.set(0,0,0);
+    if (++loaded === total) callback();
+  });
+
 
   loader.load("../assets/GreenPlatform.glb", (gltf) => {
     wallModel = gltf.scene;
     wallModel.scale.set(5, 10, 5);
+    const h = getModelHeight(wallModel);
+    //const h =10;
+   wallModel.userData.height = h;
     if (++loaded === total) callback();
   });
 
   loader.load("../assets/Trunk.glb", (gltf) => {
     trunkModel = gltf.scene;
     trunkModel.scale.set(5,5, 5);
-     const h = getModelHeight(wallModel);
-    //const h =10;
-   wallModel.userData.height = h;
+
     if (++loaded === total) callback();
   });
 
@@ -124,10 +128,12 @@ function placePropsForCell(r, c, bits) {
   } else {
     scale = 7 + Math.random() * 7;
   }
-
   const block = wallObjects[r][c];
+  if(!block){ return};
   block.scale.set(5, scale, 5);
- const h0 = getModelHeight(wallObjects[r][c]);
+
+let  h0 = getModelHeight(wallObjects[r][c]);
+
  //const h0=10;
 //  console.log(h0)
   block.position.set(cellX, Math.floor(h0), cellZ);
@@ -135,7 +141,6 @@ function placePropsForCell(r, c, bits) {
   if (bits[1] === "1") {
     const pick = Math.random() < 0.5 ? bushModel : trunkModel;
     const p = pick.clone();
-    const h1= getModelHeight(p);
     p.position.set(
       cellX - CELL_SIZE * 0.3,
      Math.floor(h0),
@@ -148,7 +153,6 @@ function placePropsForCell(r, c, bits) {
 
   if (bits[2] === "1") {
     const p = treeModel.clone();
-   const h2= getModelHeight(p);
     p.position.set(
       cellX + CELL_SIZE * 0.3,
       Math.floor(h0),
@@ -161,7 +165,6 @@ function placePropsForCell(r, c, bits) {
 
   if (bits[3] === "1") {
     const p = bushModel.clone();
-     const h3= getModelHeight(p);
     p.position.set( cellX + CELL_SIZE * 0.2,Math.floor(h0),   cellZ + CELL_SIZE * 0.2);
     p.scale.set(12, 12, 12);
     scene.add(p);
@@ -169,6 +172,7 @@ function placePropsForCell(r, c, bits) {
 }
 
 function buildMaze3D() {
+  scene.add(planeModel);
   const offsetX = -(COLS * CELL_SIZE) / 2;
   const offsetZ = -(ROWS * CELL_SIZE) / 2;
 
@@ -179,11 +183,7 @@ function buildMaze3D() {
       if (maze[r][c] === 1) {
         block = wallModel.clone();
         wallObjects[r][c] = block;
-      } else {
-        block = trunkModel.clone();
-      }
-    //  getModelHeight(wallModel)
-  const h = block.userData.height;
+        h = block.userData.height;
       block.position.set(
         c * CELL_SIZE + offsetX,
         h,
@@ -192,9 +192,11 @@ function buildMaze3D() {
 
       block.rotation.y = 0; 
 
-      scene.add(block);
+      scene.add(block); 
+      } else {
+        wallObjects[r][c] = null;
+
       if(r===ROWS -2 && c === COLS -1){
-        console.log("testttt")
 end = endModel.clone();
 end.position.set( (c +2)* CELL_SIZE + offsetX, 0,  r * CELL_SIZE + offsetZ);
 end.scale.set(15,15,15);
@@ -202,11 +204,10 @@ scene.add(end);
       }
     }
   }
-
+}
   for(let i=0; i<chunkedBits.length; i++){
     placePropsForCell(hiddenCells[i][0],hiddenCells[i][1], chunkedBits[i]);
   }
-
 }
 
 function addBgProps(){
@@ -238,3 +239,11 @@ window.addEventListener("resize", () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+function clearScene(){
+for(let i= scene.children.length; i>0; i--){
+  if(scene.children[i] !== camera && scene.children[i] !== sun && scene.children[i] !== ambient){
+scene.remove(scene.children[i]);
+  }
+}
+}
